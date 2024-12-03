@@ -1,5 +1,6 @@
 ﻿// CryptoTradingDesktopApp.Api.Models/AuthResult.cs
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace CryptoTradingDesktopApp.Api.Models
 {

@@ -1,6 +1,7 @@
 ﻿using CryptoTradingDesktopApp.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using CryptoTradingDesktopApp.Api.Models;
+using System.Threading.Tasks;
 
 namespace CryptoTradingDesktopApp.Api.Controllers
 {
@@ -17,7 +18,7 @@ namespace CryptoTradingDesktopApp.Api.Controllers
 
         // POST: api/user/register  
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] Models.UserRegistrationModel model)
+        public async Task<IActionResult> Register([FromBody] UserRegistrationModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -26,12 +27,12 @@ namespace CryptoTradingDesktopApp.Api.Controllers
             if (result.IsSuccess)
                 return Ok(result);
 
-            return BadRequest(result.Errors);
+            return BadRequest(new { result.Message, result.Errors });
         }
 
         // POST: api/user/login  
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] Models.UserLoginModel model)
+        public async Task<IActionResult> Login([FromBody] UserLoginModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

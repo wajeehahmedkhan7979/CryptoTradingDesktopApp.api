@@ -5,16 +5,20 @@ using System.Linq;
 using CryptoTradingDesktopApp.Api.Models;
 using CryptoTradingDesktopApp.Api.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.CodeAnalysis;
+using static Google.Cloud.Firestore.V1.StructuredQuery.Types;
 
 namespace CryptoTradingDesktopApp.Api.Services
 {
     public class OrderBookService : IOrderBookService
     {
         private readonly CryptoDbContext _context;
+        private readonly FirestoreService _firestoreService;
 
-        public OrderBookService(CryptoDbContext context)
+        public OrderBookService(FirestoreService firestoreService, CryptoDbContext context)
         {
-            _context = context;
+            _firestoreService = firestoreService ?? throw new ArgumentNullException(nameof(firestoreService));
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         public async Task AddOrderAsync(OrderModel order)
@@ -48,5 +52,21 @@ namespace CryptoTradingDesktopApp.Api.Services
             _context.Orders.Update(order);
             await _context.SaveChangesAsync();
         }
+
+        public async Task AddOrderAsync(OrderBook order)
+        {
+            var documentId = order.OrderId?.ToString() ?? throw new ArgumentNullException(nameof(order.OrderId));
+            await _firestoreService.AddDocumentAsync("Orders", documentId, order);
+        }
+
+        public async Task<OrderBook?> GetOrderByIdAsync(Guid orderId)
+        {
+            return await _firestoreService.GetDocumentAsync<OrderBook>("OrderBooks", orderId.ToString());
+        }
+
+       
+
     }
+
+
 }

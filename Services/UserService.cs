@@ -1,85 +1,84 @@
-using System;
-using System.Threading.Tasks;
-using FirebaseAdmin;
-using FirebaseAdmin.Auth;
-using Google.Apis.Auth.OAuth2;
-
+using CryptoTradingDesktopApp.Api.Data;
+using Microsoft.EntityFrameworkCore;
+using CryptoTradingDesktopApp.Api.Models;
 
 namespace CryptoTradingDesktopApp.Api.Services
 {
     public class UserService : IUserService
     {
-        public UserService()
+        private readonly CryptoDbContext _context;
+
+        public UserService(CryptoDbContext context)
         {
-            if (FirebaseApp.DefaultInstance == null)
-            {
-                FirebaseApp.Create(new AppOptions()
-                {
-                    Credential = GoogleCredential.FromFile("path/to/your/serviceAccountKey.json")
-                });
-            }
+            _context = context;
         }
 
-        public Task<string?> LoginUserAsync(Models.UserLoginModel model)
+        public async Task<RegistrationResult> RegisterUserAsync(UserRegistrationModel model)
         {
-            throw new NotImplementedException();
-        }
-
-        public async Task<AuthResult> RegisterUserAsync(UserRegistrationModel model)
-        {
-            try
+            // Check if a user with the same email already exists
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+            if (existingUser != null)
             {
-                var userRecordArgs = new UserRecordArgs()
+                return new RegistrationResult
                 {
-                    Email = model.Email,
-                    Password = model.Password,
-                    DisplayName = model.FullName
+                    IsSuccess = false, // Registration failed
+                    Message = "Email is already registered.",
+                    Errors = new List<string> { "Email is already registered." }
                 };
-
-                var userRecord = await FirebaseAuth.DefaultInstance.CreateUserAsync(userRecordArgs);
-                return new AuthResult { IsSuccess = true, UserId = userRecord.Uid };
             }
-            catch (FirebaseAuthException ex)
+
+            // Hash the password using BCrypt
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(model.Password);
+
+            // Create a new user
+            var newUser = new UserModel
             {
-                return new AuthResult { IsSuccess = false, Errors = new[] { ex.Message } };
+                UserId = Guid.NewGuid(),
+                Email = model.Email,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                PasswordHash = passwordHash,
+                DateRegistered = DateTime.UtcNow,
+                IsVerified = false // Set this based on your application's requirements
+            };
+
+            // Add user to the database
+            await _context.Users.AddAsync(newUser);
+            await _context.SaveChangesAsync();
+
+            // Return a successful registration result
+            return new RegistrationResult
+            {
+                IsSuccess = true, // Registration succeeded
+                Message = "User registered successfully.",
+                Errors = new List<string>() // No errors
+            };
+        }
+
+        public async Task<string?> LoginUserAsync(UserLoginModel model)
+        {
+            // Retrieve the user from the database
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+            if (user == null)
+            {
+                return null; // User not found
             }
+
+            // Verify the password
+            if (!BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
+            {
+                return null; // Password does not match
+            }
+
+            // Generate a JWT token (stubbed here, implement your token generation logic)
+            var token = GenerateJwtToken(user);
+            return token;
         }
 
-        public Task RegisterUserAsync(Models.UserRegistrationModel model)
+        private string GenerateJwtToken(UserModel user)
         {
-            throw new NotImplementedException();
+            // Replace with your actual JWT token generation logic
+            return "sample_jwt_token";
         }
-
-        async Task<string?> IUserService.LoginUserAsync(UserLoginModel model)
-        {
-            var user = await FirebaseAuth.DefaultInstance.GetUserByEmailAsync(model.Email);
-            return await FirebaseAuth.DefaultInstance.CreateCustomTokenAsync(user.Uid);
-        }
-    }
-
-    public class AuthResult
-    {
-        public bool IsSuccess { get; set; }
-        public string? UserId { get; set; }
-        public string[] Errors { get; set; } = Array.Empty<string>();  // Initialized to an empty array
-        public bool Success { get; internal set; }
-        public string? Message { get; internal set; }
-        public DateTime ExpiresAt { get; internal set; }
-        public string? Token { get; internal set; }
-    }
-
-    public class UserRegistrationModel
-    {
-        public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-        public string FullName { get; set; } = string.Empty;
-        public string? FirstName { get; internal set; }
-        public string? LastName { get; internal set; }
-    }
-
-    public class UserLoginModel
-    {
-        public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
     }
 }

@@ -1,10 +1,6 @@
 ﻿using Google.Cloud.Firestore;
-using CryptoTradingDesktopApp.Api.Models;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
-namespace CryptoTradingDesktopApp.Services
+namespace CryptoTradingDesktopApp.Api.Services
 {
     public class FirestoreService
     {
@@ -15,114 +11,24 @@ namespace CryptoTradingDesktopApp.Services
             _firestoreDb = firestoreDb;
         }
 
-        public async Task<bool> AddOrderAsync(OrderModel order)
+        public async Task AddDocumentAsync<T>(string collectionName, string documentId, T data)
         {
-            try
-            {
-                CollectionReference ordersRef = _firestoreDb.Collection("orders");
-                await ordersRef.AddAsync(order);
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            var collection = _firestoreDb.Collection(collectionName);
+            var document = collection.Document(documentId);
+            await document.SetAsync(data);
         }
 
-        public async Task<List<OrderModel>> GetOrdersAsync(OrderType type)
+        public async Task<T?> GetDocumentAsync<T>(string collectionName, string documentId) where T : class
         {
-            Query query = _firestoreDb.Collection("orders").WhereEqualTo("Type", type);
-            QuerySnapshot snapshot = await query.GetSnapshotAsync();
-
-            List<OrderModel> orders = new List<OrderModel>();
-            foreach (DocumentSnapshot document in snapshot.Documents)
-            {
-                orders.Add(document.ConvertTo<OrderModel>());
-            }
-
-            return orders;
+            var document = _firestoreDb.Collection(collectionName).Document(documentId);
+            var snapshot = await document.GetSnapshotAsync();
+            return snapshot.Exists ? snapshot.ConvertTo<T>() : null;
         }
 
-        public async Task<bool> UpdateWalletBalanceAsync(Guid userId, decimal newBalance)
+        public async Task DeleteDocumentAsync(string collectionName, string documentId)
         {
-            try
-            {
-                DocumentReference walletRef = _firestoreDb.Collection("wallets").Document(userId.ToString());
-                await walletRef.SetAsync(new { Balance = newBalance }, SetOptions.MergeAll);
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        public async Task<WalletModel?> GetWalletAsync(Guid userId)
-        {
-            DocumentReference walletRef = _firestoreDb.Collection("wallets").Document(userId.ToString());
-            DocumentSnapshot snapshot = await walletRef.GetSnapshotAsync();
-
-            if (snapshot.Exists)
-            {
-                return snapshot.ConvertTo<WalletModel>();
-            }
-
-            return null;
-        }
-
-        public async Task<UserModel?> GetUserByEmailAsync(string email)
-        {
-            Query query = _firestoreDb.Collection("users").WhereEqualTo("Email", email);
-            QuerySnapshot snapshot = await query.GetSnapshotAsync();
-
-            if (snapshot.Count > 0)
-            {
-                return snapshot.Documents[0].ConvertTo<UserModel>();
-            }
-
-            return null;
-        }
-
-        public async Task<bool> AddUserAsync(UserModel user)
-        {
-            try
-            {
-                DocumentReference userRef = _firestoreDb.Collection("users").Document(user.UserId.ToString());
-                await userRef.SetAsync(user);
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        public async Task<bool> RemoveOrderAsync(Guid orderId)
-        {
-            try
-            {
-                DocumentReference orderRef = _firestoreDb.Collection("orders").Document(orderId.ToString());
-                await orderRef.DeleteAsync();
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        public async Task<bool> UpdateOrderAsync(OrderModel order)
-        {
-            try
-            {
-                DocumentReference orderRef = _firestoreDb.Collection("orders").Document(order.Id.ToString());
-                await orderRef.SetAsync(order, SetOptions.MergeAll);
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            var document = _firestoreDb.Collection(collectionName).Document(documentId);
+            await document.DeleteAsync();
         }
     }
 }

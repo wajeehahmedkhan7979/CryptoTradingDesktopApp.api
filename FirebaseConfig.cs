@@ -1,6 +1,5 @@
 ﻿using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
-using Microsoft.Extensions.Configuration;
 using System.IO;
 
 namespace CryptoTradingDesktopApp.Api

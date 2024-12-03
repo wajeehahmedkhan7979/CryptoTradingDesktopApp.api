@@ -4,16 +4,22 @@ using CryptoTradingDesktopApp.Api.Models;
 using CryptoTradingDesktopApp.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using BCrypt.Net;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace CryptoTradingDesktopApp.Api.Services
 {
     public class AuthService : IAuthService
     {
         private readonly CryptoDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public AuthService(CryptoDbContext context)
+        public AuthService(CryptoDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         public async Task<AuthResult> LoginAsync(UserLoginModel model)
@@ -47,13 +53,6 @@ namespace CryptoTradingDesktopApp.Api.Services
                 Token = token,
                 ExpiresAt = DateTime.UtcNow.AddDays(7)
             };
-
-            throw new NotImplementedException();
-        }
-
-        public Task<AuthResult> LoginAsync(Models.UserLoginModel model)
-        {
-            throw new NotImplementedException();
         }
 
         public async Task<AuthResult> RegisterAsync(UserRegistrationModel model)
@@ -90,20 +89,27 @@ namespace CryptoTradingDesktopApp.Api.Services
                 Success = true,
                 Message = "Registration successful"
             };
-
-            throw new NotImplementedException();
         }
 
-        public Task<AuthResult> RegisterAsync(Models.UserRegistrationModel model)
+        private string GenerateJwtToken(UserModel user)
         {
-            throw new NotImplementedException();
-        }
+            var key = _configuration["Jwt:Key"] ?? throw new ArgumentNullException("Jwt:Key");
+            var keyBytes = Encoding.UTF8.GetBytes(key);
 
-        private static string GenerateJwtToken(UserModel user)
-        {
-            // Implement your JWT token generation logic here
-            // For now, returning a placeholder
-            return "jwt_token";
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim("id", user.UserId.ToString()),
+                    new Claim(ClaimTypes.Email, user.Email)
+                }),
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(keyBytes), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
     }
 }

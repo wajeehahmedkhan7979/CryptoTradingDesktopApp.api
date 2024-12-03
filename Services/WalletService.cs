@@ -41,6 +41,7 @@ namespace CryptoTradingDesktopApp.Api.Services
             return wallet;
         }
 
+
         public async Task<WalletModel> GetWalletByUserIdAsync(int userId)
         {
             var guidUserId = new Guid(userId.ToString().PadLeft(32, '0'));

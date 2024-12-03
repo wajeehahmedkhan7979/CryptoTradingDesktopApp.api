@@ -1,11 +1,16 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace CryptoTradingDesktopApp.Api.Models
 {
     public class OrderBook
     {
-        public List<OrderBookEntry> Bids { get; set; }
-        public List<OrderBookEntry> Asks { get; set; }
+        public required List<OrderBookEntry> Bids { get; set; } = new List<OrderBookEntry>();
+        public required List<OrderBookEntry> Asks { get; set; } = new List<OrderBookEntry>();
+
+
+
+        public object OrderId { get; internal set; }
     }
 
     public class OrderBookEntry

@@ -1,6 +1,7 @@
 ﻿// CryptoTradingDesktopApp.Api.Models/UserLoginModel.cs
 using System.ComponentModel.DataAnnotations;
 
+
 namespace CryptoTradingDesktopApp.Api.Models
 {
     public class UserLoginModel

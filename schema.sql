@@ -27,16 +27,14 @@ CREATE TABLE Transactions (
 );
 
 CREATE TABLE Orders (
-    OrderId CHAR(36) PRIMARY KEY,
-    UserId CHAR(36) NOT NULL,
-    CryptoCurrency VARCHAR(10) NOT NULL,
+    OrderId UNIQUEIDENTIFIER PRIMARY KEY,
+    UserId UNIQUEIDENTIFIER NOT NULL,
+    CryptoCurrency NVARCHAR(50) NOT NULL,
     Amount DECIMAL(18, 8) NOT NULL,
     Price DECIMAL(18, 8) NOT NULL,
-    IsBuyOrder BOOLEAN NOT NULL,
-    Status ENUM('Pending', 'Matched', 'Cancelled') DEFAULT 'Pending',
-    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (UserId) REFERENCES Users(UserId)
+    Status NVARCHAR(50) NOT NULL CHECK (Status IN ('Pending', 'Completed', 'Cancelled'))
 );
+
 CREATE TABLE Trades (
     TradeId CHAR(36) PRIMARY KEY,
     BuyOrderId CHAR(36) NOT NULL,

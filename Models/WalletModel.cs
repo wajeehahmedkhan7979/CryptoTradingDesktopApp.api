@@ -1,11 +1,17 @@
-﻿namespace CryptoTradingDesktopApp.Api.Models
+﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace CryptoTradingDesktopApp.Api.Models
 {
     public class WalletModel
     {
-        public required Guid UserId { get; set; }
-        public required UserModel User { get; set; }  // Ensure navigation is set
-        public required string Currency { get; set; } // Required for non-null values
-        public decimal Balance { get; set; } = 0;     // Default values
-        public decimal CryptoBalance { get; set; } = 0;
+        [ForeignKey(nameof(User))]
+        public Guid UserId { get; set; } // Foreign key to User
+
+        public UserModel User { get; set; } = null!; // Navigation property (non-nullable)
+
+        public string Currency { get; set; } = "USD"; // Default currency
+        public decimal Balance { get; set; } = 0; // Default balance
+        public decimal CryptoBalance { get; set; } = 0; // Default crypto balance
     }
 }

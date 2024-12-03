@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using CryptoTradingDesktopApp.Api.Services;
-using System;
-using System.Threading.Tasks;
 using CryptoTradingDesktopApp.Api.Models;
 using Microsoft.AspNetCore.Authorization;
+using System;
+using System.Threading.Tasks;
 
 namespace CryptoTradingDesktopApp.Api.Controllers
 {
@@ -50,13 +50,13 @@ namespace CryptoTradingDesktopApp.Api.Controllers
 
             try
             {
-                var transaction = new Transaction
+                var transaction = new TransactionModel
                 {
                     UserId = model.UserId,
                     Amount = model.Amount,
                     Currency = model.Currency,
                     TransactionType = model.TransactionType,
-                    Date = DateTime.UtcNow,
+                    Timestamp = DateTime.UtcNow,  // Set the Timestamp property instead of Date
                     Description = model.Description
                 };
 
@@ -68,5 +68,6 @@ namespace CryptoTradingDesktopApp.Api.Controllers
                 return StatusCode(500, new { Error = ex.Message });
             }
         }
+
     }
 }

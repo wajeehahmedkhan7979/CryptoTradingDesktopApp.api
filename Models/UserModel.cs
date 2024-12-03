@@ -1,17 +1,22 @@
-﻿namespace CryptoTradingDesktopApp.Api.Models
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+
+namespace CryptoTradingDesktopApp.Api.Models
 {
     public class UserModel
     {
-        public Guid UserId { get; set; }
-        public string Email { get; set; } = string.Empty;
-        public string PasswordHash { get; set; } = string.Empty;
-        public string FirstName { get; set; } = string.Empty;
-        public string LastName { get; set; } = string.Empty;
+        public required Guid UserId { get; set; }
+        public required string Email { get; set; }
+        public required string FirstName { get; set; }
+        public required string LastName { get; set; }
+        public required string PasswordHash { get; set; }
+        public DateTime DateRegistered { get; set; } = DateTime.UtcNow;
+        public bool IsVerified { get; set; } = false;
 
-        // Navigation properties
+        // Relationships
         public ICollection<WalletModel> Wallets { get; set; } = new List<WalletModel>();
         public ICollection<TransactionModel> Transactions { get; set; } = new List<TransactionModel>();
-        public DateTime DateRegistered { get; internal set; }
-        public bool IsVerified { get; internal set; }
+        public ICollection<OrderModel> Orders { get; internal set; }
     }
 }

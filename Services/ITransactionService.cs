@@ -7,8 +7,7 @@ namespace CryptoTradingDesktopApp.Api.Services
 {
     public interface ITransactionService
     {
-        Task<List<TransactionModel>> GetTransactionHistoryByUserIdAsync(Guid userId);
-        Task<List<TransactionModel>> GetTransactionHistoryByUserIdAsync(int userId);
-        Task AddTransactionAsync(TransactionModel transaction);
+        Task<List<TransactionModel>> GetTransactionHistoryByUserIdAsync(Guid userId); // Get transaction history for a user
+        Task AddTransactionAsync(TransactionModel transaction); // Add a new transaction
     }
 }

@@ -7,8 +7,8 @@ namespace CryptoTradingDesktopApp.Api.Services
 {
     public interface ITradeService
     {
-        Task<(bool Success, string Message)> PlaceOrderAsync(OrderRequest request);
-        Task<OrderBook> GetOrderBookAsync();
-        Task<List<OrderModel>> GetUserOrdersAsync(Guid userId);
+        Task<OrderBook> GetOrderBookAsync(); // Get the current order book
+        Task<List<OrderModel>> GetUserOrdersAsync(Guid userId); // Get orders for a specific user
+        Task<(bool Success, string Message)> PlaceOrderAsync(OrderRequest request); // Place a new order
     }
 }

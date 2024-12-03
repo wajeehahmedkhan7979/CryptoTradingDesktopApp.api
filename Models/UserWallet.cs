@@ -1,4 +1,6 @@
-﻿namespace CryptoTradingDesktopApp.Api.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace CryptoTradingDesktopApp.Api.Models
 {
     public class UserWallet
     {
